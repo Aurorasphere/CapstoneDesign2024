@@ -6,15 +6,17 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, BatchNormalization
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import warnings
 from multiprocessing import Pool
 import mediapipe as mp
+import pandas as pd
 
 # 경고 메시지 무시
 warnings.filterwarnings('ignore', category=UserWarning, module='tensorflow')
 warnings.filterwarnings('ignore', category=DeprecationWarning, module='tensorflow')
 
-# 데이터 경로 설 정
+# 데이터 경로 설정
 data_path = '/home/aurorasphere/Programming/TEST_CAPSTONE/data/video'
 actions = []
 
@@ -104,14 +106,16 @@ optimizer = Adam(learning_rate=0.0001)
 # 모델 컴파일
 model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
+# 학습 조기 종료 및 학습률 감소 설정
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001)
+
 print("모델 학습 시작")
 # 모델 학습
-history = model.fit(X_data, y_data, epochs=500, batch_size=32, validation_split=0.2)
+history = model.fit(X_data, y_data, epochs=500, batch_size=32, validation_split=0.2, callbacks=[early_stopping, reduce_lr])
 print("모델 학습 완료")
 
 # 학습 결과를 CSV 파일로 저장
-import pandas as pd
-
 history_df = pd.DataFrame(history.history)
 history_df.to_csv('training_history.csv', index=False)
 

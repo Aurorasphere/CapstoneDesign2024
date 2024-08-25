@@ -1,0 +1,13 @@
+[package]
+name = "video_processing"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+opencv = "0.61"
+ndarray = "0.15"
+pyo3 = { version = "0.15", features = ["extension-module"] }
+
+[lib]
+crate-type = ["cdylib"]
+
